@@ -4,21 +4,19 @@ import captable
 import unittest
 import datetime
 
+
+class ClassACommon(captable.CommonStock):
+    name = "Class A Common Stock"
+
+class ClassBCommon(captable.CommonStock):
+    name = "Class B Common Stock"
+
 class AuthTests(unittest.TestCase):
     """Test authorization of classes of securities"""
 
     def setUp(self):
         """Initialize a blank captable and authorize multiple classes of
         securities"""
-        class ClassACommon(captable.CommonStock):
-            name = "Class A Common Stock"
-
-        class ClassBCommon(captable.CommonStock):
-            name = "Class B Common Stock"
-
-        self.classACommon = ClassACommon
-        self.classBCommon = ClassBCommon
-
         self.table = captable.CapTable()
         self.table.authorize(
             classes=[{
@@ -61,7 +59,7 @@ class MultipleAuthTests(AuthTests):
         super(MultipleAuthTests, self).setUp()
         self.table.authorize(
             classes=[{
-                "cls": self.classBCommon,
+                "cls": ClassBCommon,
                 "amount": 750000
             }],
             txn_datetime=datetime.datetime(2015,5,10))
@@ -96,7 +94,7 @@ class DeltaAuthTests(AuthTests):
         super(DeltaAuthTests, self).setUp()
         self.table.authorize(
             classes=[{
-                "cls": self.classBCommon,
+                "cls": ClassBCommon,
                 "delta": 250000
             }],
             txn_datetime=datetime.datetime(2015,5,10))
