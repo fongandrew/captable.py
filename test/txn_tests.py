@@ -15,7 +15,7 @@ class StubTransaction(captable.Transaction):
 
 
 class TransactionTests(unittest.TestCase):
-    """Test adding transacitons and processing them"""
+    """Test adding transactions and processing them"""
 
     def setUp(self):
         """Initialize a blank captable and authorize multiple classes of
