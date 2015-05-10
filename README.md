@@ -15,10 +15,11 @@ Then enter `py.test` to run tests.
 
 TODO
 ----
-[ ] Authorization of Stock
-[ ] Convertible Securities
-    [ ] Prefered Stock
-    [ ] Convertible Debt
-[ ] Stock Plans
-    [ ] Options
-[ ] Waterfall/Liquidation Analysis
+* [ ] Authorization of Stock
+* [ ] Issuance of Stock
+* [ ] Convertible Securities
+  * [ ] Prefered Stock
+  * [ ] Convertible Debt
+* [ ] Stock Plans
+  * [ ] Options
+* [ ] Waterfall/Liquidation Analysis
