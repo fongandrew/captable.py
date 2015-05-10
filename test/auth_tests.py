@@ -38,10 +38,7 @@ class AuthTests(unittest.TestCase):
 
         transaction = self.table.transactions[0]
         assert isinstance(transaction, captable.AuthTransaction)
-
-        #TODO: Test time
-
-
+    
     def test_authorize_amount(self):
         """Table should have list outstanding amounts for each class
         """

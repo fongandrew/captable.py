@@ -17,6 +17,9 @@ class Transaction(object):
     def __init__(self, txn_datetime):
         self.datetime = txn_datetime
 
+    def process(self, state):
+        raise NotImplementedError
+
 
 class AuthTransaction(Transaction):
     """

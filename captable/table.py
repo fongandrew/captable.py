@@ -18,18 +18,20 @@ class CapTable(object):
         if (not isinstance(txn, transactions.Transaction)):
             raise ValueError("Can only record transactions"
                              "of Transaction class")
-
-        # TODO: sort transacitons list by time
         self.transactions.append(txn)
+        self.transactions.sort(key=(lambda txn: txn.datetime))
 
     def process(self, to_time=None):
         """Process transactions up to (and including) a particular time and 
         returns date as of that time"""
         tableState = state.CapTableState();
 
-        # TODO: Process only to to_time
+        # Process only to to_time (assumes self.transactions is ordered)
         for txn in self.transactions:
-            txn.process(tableState)
+            if (not to_time) or (txn.datetime <= to_time):
+                txn.process(tableState)
+            else:
+                break
         return tableState;
 
     def authorize(self, *args, **kwds):
