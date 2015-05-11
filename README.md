@@ -17,8 +17,8 @@ TODO
 ----
 * [x] Transaction processing basics
 * [x] Authorization of Stock
-* [ ] Persons
 * [ ] Error tracking and rules
+* [ ] Persons
 * [ ] Issuance of Stock
 * [ ] Convertible Securities
   * [ ] Prefered Stock
