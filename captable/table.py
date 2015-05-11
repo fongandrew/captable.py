@@ -41,8 +41,3 @@ class CapTable(object):
             else:
                 break
         return tableState;
-
-    def authorize(self, *args, **kwds):
-        txn = transactions.AuthTransaction(*args, **kwds)
-        self.record_txn(txn)
-

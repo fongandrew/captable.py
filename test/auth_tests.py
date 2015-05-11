@@ -18,24 +18,11 @@ class AuthTests(unittest.TestCase):
         """Initialize a blank captable and authorize multiple classes of
         securities"""
         self.table = captable.CapTable()
-        self.table.authorize(
-            classes=[{
-                "cls": ClassACommon,
-                "amount": 1000000
-            }, {
-                "cls": ClassBCommon,
-                "amount": 500000
-            }],
-            txn_datetime=datetime.datetime(2015,5,9))
-
+        self.table.record_multi_txn(txns=[
+            captable.AuthTransaction(cls=ClassACommon, amount=1000000),
+            captable.AuthTransaction(cls=ClassBCommon, amount=500000),
+        ], txn_datetime=datetime.datetime(2015,5,9))
         self.table_state = self.table.process()
-
-    def test_authorize_txn(self):
-        """Table should have an authorize transaction"""        
-        self.assertEqual(len(self.table.transactions), 1)
-
-        transaction = self.table.transactions[0]
-        assert isinstance(transaction, captable.AuthTransaction)
     
     def test_authorize_amount(self):
         """Table should have list outstanding amounts for each class
@@ -57,20 +44,12 @@ class MultipleAuthTests(AuthTests):
     def setUp(self):
         """Change number of shares of stock"""
         super(MultipleAuthTests, self).setUp()
-        self.table.authorize(
-            classes=[{
-                "cls": ClassBCommon,
-                "amount": 750000
-            }],
-            txn_datetime=datetime.datetime(2015,5,10))
+        self.table.record_txn(
+            captable.AuthTransaction(
+                cls=ClassBCommon,
+                amount=750000,
+                txn_datetime=datetime.datetime(2015,5,10)))
         self.table_state = self.table.process()
-
-    def test_authorize_txn(self):
-        """Table should have a new authorize transaction"""        
-        self.assertEqual(len(self.table.transactions), 2)
-
-        transaction = self.table.transactions[1]
-        assert isinstance(transaction, captable.AuthTransaction)
 
     def test_authorize_amount(self):
         """Old classes should be unchanged -- specified class should have new
@@ -91,20 +70,12 @@ class DeltaAuthTests(AuthTests):
     def setUp(self):
         """Authorize a delta change to the number of shares of stock"""
         super(DeltaAuthTests, self).setUp()
-        self.table.authorize(
-            classes=[{
-                "cls": ClassBCommon,
-                "delta": 250000
-            }],
-            txn_datetime=datetime.datetime(2015,5,10))
+        self.table.record_txn(
+            captable.AuthTransaction(
+                cls=ClassBCommon,
+                delta=250000,
+                txn_datetime=datetime.datetime(2015,5,10)))
         self.table_state = self.table.process()
-
-    def test_authorize_txn(self):
-        """Table should have a new authorize transaction"""        
-        self.assertEqual(len(self.table.transactions), 2)
-
-        transaction = self.table.transactions[1]
-        assert isinstance(transaction, captable.AuthTransaction)
 
     def test_authorize_amount(self):
         """Old classes should be unchanged -- specified class should have new
@@ -120,3 +91,5 @@ class DeltaAuthTests(AuthTests):
         self.assertEqual(amountsB.issued, 0)
         self.assertEqual(amountsB.outstanding, 0)
         self.assertEqual(amountsB.reserved, 0)
+
+# amount / delta - error check

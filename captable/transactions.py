@@ -48,34 +48,34 @@ class AuthTransaction(Transaction):
     """Transaction authorizing a new security
 
     Args:
-        txn_datetime (datetime): When this transaction occurred
-        classes (list): List of dicts with a "cls" key pointing to a class
-            of securities and an integer "amount" key indicating how many
-            shares of that security to authorize 
+        txn_datetime (datetime): When this transaction occurred, optional
+        cls (Security subclass): Subclass of Security that is being authorized
+        amount (int): How many total shares to authorize -- replaces previous
+            amount rather than increment it
+        delta (int): Alternative to delta, how many shares to increment or 
+            decrement authorized amount by. Either amount or delta may be
+            set. If both are set, one can be used to sanity-check the other
+            during processing.
 
     """
-    def __init__(self, classes, txn_datetime=None):
+    def __init__(self, cls, amount=None, delta=None, txn_datetime=None):
+        # Validation
+        if not issubclass(cls, securities.Security):
+            raise ValueError("Cls must be a subclass of Security")
+        if type(amount) != int and type(delta) != int:
+            raise ValueError("Must specify integer amount or delta in "
+                             "AuthTransaction")
+
         super(AuthTransaction, self).__init__(txn_datetime)
-        for cls in classes:
-            if not issubclass(cls["cls"], securities.Security):
-                raise ValueError("Can only authorize subclasses of Security")
-            if "amount" in cls:
-                if type(cls["amount"]) != int:
-                    raise ValueError("Can only authorize integer amounts")
-            elif "delta" in cls:
-                if type(cls["delta"]) != int:
-                    raise ValueError("Can only authorize integer deltas")
-            else:
-                raise ValueError("Must specify amount or delta in "
-                                 "AuthTransaction")
-        self.classes = classes
+        self.cls = cls
+        self.amount = amount
+        self.delta = delta
 
     def process(self, state):
         "Processing an AuthTransaction means setting the amount to a set value"
-        for cls in self.classes:
-            amounts = state.get_amounts(cls["cls"])
-            if "amount" in cls:
-                amounts.authorized = cls["amount"]
-            elif "delta" in cls:
-                amounts.authorized += cls["delta"]
+        amounts = state.get_amounts(self.cls)
+        if self.amount:
+            amounts.authorized = self.amount
+        elif self.delta:
+            amounts.authorized += self.delta
 
