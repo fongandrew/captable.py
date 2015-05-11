@@ -40,17 +40,17 @@ class AuthTests(unittest.TestCase):
     def test_authorize_amount(self):
         """Table should have list outstanding amounts for each class
         """
-        classACommon = self.table_state.get_amounts("Class A Common Stock")
-        self.assertEqual(classACommon.authorized, 1000000)
-        self.assertEqual(classACommon.issued, 0)
-        self.assertEqual(classACommon.outstanding, 0)
-        self.assertEqual(classACommon.reserved, 0)
+        amountsA = self.table_state.get_amounts(ClassACommon)
+        self.assertEqual(amountsA.authorized, 1000000)
+        self.assertEqual(amountsA.issued, 0)
+        self.assertEqual(amountsA.outstanding, 0)
+        self.assertEqual(amountsA.reserved, 0)
 
-        classBCommon = self.table_state.get_amounts("Class B Common Stock")
-        self.assertEqual(classBCommon.authorized, 500000)
-        self.assertEqual(classACommon.issued, 0)
-        self.assertEqual(classBCommon.outstanding, 0)
-        self.assertEqual(classBCommon.reserved, 0)
+        amountsB = self.table_state.get_amounts(ClassBCommon)
+        self.assertEqual(amountsB.authorized, 500000)
+        self.assertEqual(amountsB.issued, 0)
+        self.assertEqual(amountsB.outstanding, 0)
+        self.assertEqual(amountsB.reserved, 0)
 
 
 class MultipleAuthTests(AuthTests):
@@ -75,18 +75,17 @@ class MultipleAuthTests(AuthTests):
     def test_authorize_amount(self):
         """Old classes should be unchanged -- specified class should have new
         updated numbers"""
-        classACommon = self.table_state.get_amounts("Class A Common Stock")
-        self.assertEqual(classACommon.authorized, 1000000)
-        self.assertEqual(classACommon.issued, 0)
-        self.assertEqual(classACommon.outstanding, 0)
-        self.assertEqual(classACommon.reserved, 0)
+        amountsA = self.table_state.get_amounts(ClassACommon)
+        self.assertEqual(amountsA.authorized, 1000000)
+        self.assertEqual(amountsA.issued, 0)
+        self.assertEqual(amountsA.outstanding, 0)
+        self.assertEqual(amountsA.reserved, 0)
 
-        classBCommon = self.table_state.get_amounts("Class B Common Stock")
-        self.assertEqual(classBCommon.authorized, 750000)
-        self.assertEqual(classACommon.issued, 0)
-        self.assertEqual(classBCommon.outstanding, 0)
-        self.assertEqual(classBCommon.reserved, 0)
-
+        amountsB = self.table_state.get_amounts(ClassBCommon)
+        self.assertEqual(amountsB.authorized, 750000)
+        self.assertEqual(amountsB.issued, 0)
+        self.assertEqual(amountsB.outstanding, 0)
+        self.assertEqual(amountsB.reserved, 0)
 
 class DeltaAuthTests(AuthTests):
     def setUp(self):
@@ -110,14 +109,14 @@ class DeltaAuthTests(AuthTests):
     def test_authorize_amount(self):
         """Old classes should be unchanged -- specified class should have new
         updated numbers"""
-        classACommon = self.table_state.get_amounts("Class A Common Stock")
-        self.assertEqual(classACommon.authorized, 1000000)
-        self.assertEqual(classACommon.issued, 0)
-        self.assertEqual(classACommon.outstanding, 0)
-        self.assertEqual(classACommon.reserved, 0)
+        amountsA = self.table_state.get_amounts(ClassACommon)
+        self.assertEqual(amountsA.authorized, 1000000)
+        self.assertEqual(amountsA.issued, 0)
+        self.assertEqual(amountsA.outstanding, 0)
+        self.assertEqual(amountsA.reserved, 0)
 
-        classBCommon = self.table_state.get_amounts("Class B Common Stock")
-        self.assertEqual(classBCommon.authorized, 750000)
-        self.assertEqual(classACommon.issued, 0)
-        self.assertEqual(classBCommon.outstanding, 0)
-        self.assertEqual(classBCommon.reserved, 0)
+        amountsB = self.table_state.get_amounts(ClassBCommon)
+        self.assertEqual(amountsB.authorized, 750000)
+        self.assertEqual(amountsB.issued, 0)
+        self.assertEqual(amountsB.outstanding, 0)
+        self.assertEqual(amountsB.reserved, 0)

@@ -13,8 +13,8 @@ class CapTableState(object):
         # Dict mapping securities names to amounts outstanding and issued
         self.securities = {};
 
-    def get_amounts(self, name):
-        return self.securities.setdefault(name, SecuritiesState())
+    def get_amounts(self, cls):
+        return self.securities.setdefault(cls, SecuritiesState())
 
 
 class SecuritiesState(object):
