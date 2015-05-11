@@ -22,6 +22,11 @@ class TransactionTests(unittest.TestCase):
         self.table.record_txn(self.txn_3)
         self.table.record_txn(self.txn_2)
 
+    def test_transactions_list(self):
+        """All transactions should be stored in table list"""
+        self.assertEqual(self.table.transactions,
+                         [self.txn_1, self.txn_2, self.txn_3])
+
     def test_process_all(self):
         """Calling process without an argument processes all transactions"""
         state = self.table.process()
