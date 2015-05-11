@@ -21,6 +21,14 @@ class CapTable(object):
         self.transactions.append(txn)
         self.transactions.sort(key=(lambda txn: txn.datetime))
 
+    def record_multi_txn(self, txns, txn_datetime=None):
+        """Record multiple transactions"""
+        multi_txn = transactions.MultiTransaction(
+            txns=txns,
+            txn_datetime=txn_datetime
+        )
+        self.record_txn(multi_txn)
+
     def process(self, to_time=None):
         """Process transactions up to (and including) a particular time and 
         returns date as of that time"""
