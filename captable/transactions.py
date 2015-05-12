@@ -10,7 +10,7 @@ from . import state
 
 class Transaction(object):
     """A single transaction within a captable -- most used as a baseclass for
-    other transacitons
+    other transactions
 
     Args:
         txn_datetime (datetime): When this transaction occurred
@@ -18,6 +18,9 @@ class Transaction(object):
     """
     def __init__(self, txn_datetime=None):
         self.datetime = txn_datetime or datetime.datetime.now()
+
+    def __str__(self):
+        return self.__class__.__name__ + " @ " + str(self.datetime)
 
     def process(self, state):
         raise NotImplementedError

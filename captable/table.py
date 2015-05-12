@@ -1,6 +1,8 @@
 """For managing captable and companies
 """
 from __future__ import absolute_import
+
+from .logger import logger
 from . import transactions
 from . import state
 
@@ -32,12 +34,14 @@ class CapTable(object):
     def process(self, to_time=None):
         """Process transactions up to (and including) a particular time and 
         returns date as of that time"""
-        tableState = state.CapTableState();
+        table_state = state.CapTableState();
 
         # Process only to to_time (assumes self.transactions is ordered)
         for txn in self.transactions:
             if (not to_time) or (txn.datetime <= to_time):
-                txn.process(tableState)
+                logger.debug("Processing " + str(txn))
+                table_state.last_txn = txn
+                txn.process(table_state)
             else:
                 break
-        return tableState;
+        return table_state;

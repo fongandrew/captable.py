@@ -13,4 +13,7 @@ class StubTransaction(captable.Transaction):
 
     @classmethod
     def check(cls, state, *txns):
-        assert state.stubs_processed == list(txns)
+        if hasattr(state, 'stubs_processed'):
+            assert state.stubs_processed == list(txns)
+        else:
+            assert (not txns), "Stubs processed not set"
