@@ -16,8 +16,9 @@ Then enter `py.test` to run tests.
 TODO
 ----
 * [x] Transaction processing basics
-* [x] Authorization of Stock
+* [ ] Authorization of Stock
 * [x] Error tracking
+* [ ] Transactional failure, rollback
 * [ ] Validation rules
 * [ ] Persons
 * [ ] Retirement of Stock

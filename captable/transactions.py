@@ -53,7 +53,7 @@ class AuthTransaction(Transaction):
 
     Args:
         txn_datetime (datetime): When this transaction occurred, optional
-        cls (Security subclass): Subclass of Security that is being authorized
+        security (Security): Subclass of Security that is being authorized
         amount (int): How many total shares to authorize -- replaces previous
             amount rather than increment it
         delta (int): Alternative to delta, how many shares to increment or 
@@ -62,22 +62,22 @@ class AuthTransaction(Transaction):
             during processing.
 
     """
-    def __init__(self, cls, amount=None, delta=None, txn_datetime=None):
+    def __init__(self, security, amount=None, delta=None, txn_datetime=None):
         # Validation
-        if not issubclass(cls, securities.Security):
-            raise ValueError("Cls must be a subclass of Security")
+        if not isinstance(security, securities.Security):
+            raise ValueError("Cls must be an instance of Security")
         if type(amount) != int and type(delta) != int:
             raise ValueError("Must specify integer amount or delta in "
                              "AuthTransaction")
 
         super(AuthTransaction, self).__init__(txn_datetime)
-        self.cls = cls
+        self.security = security
         self.amount = amount
         self.delta = delta
 
     def process(self, state):
         "Processing an AuthTransaction means setting the amount to a set value"
-        amounts = state.get_amounts(self.cls)
+        amounts = state.get_amounts(self.security)
         if self.amount:
             amounts.authorized = self.amount
         elif self.delta:

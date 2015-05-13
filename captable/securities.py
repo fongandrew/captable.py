@@ -6,13 +6,17 @@ from . import mixins
 
 
 class Security(mixins.Snowflake):
-    @property
-    def name(self):
-        "Human-readable name for this class or type of security"
-        raise NotImplementedError
+    """Represents a class or type of Security
+
+    Args:
+        name (str) - The name of this security, e.g. "Class A Common Stock"
+    """
+
+    def __init__(self, name):
+        self.name = name
 
 class Stock(Security):
     pass
 
 class CommonStock(Stock):
-    name = "Common Stock"
+    pass
