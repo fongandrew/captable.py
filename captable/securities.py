@@ -2,7 +2,10 @@
 """
 from __future__ import absolute_import
 
-class Security(object):
+from . import mixins
+
+
+class Security(mixins.Snowflake):
     @property
     def name(self):
         "Human-readable name for this class or type of security"

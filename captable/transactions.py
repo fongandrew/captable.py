@@ -4,11 +4,12 @@ at some point in time.
 from __future__ import absolute_import
 
 import datetime
+from . import mixins
 from . import securities
 from . import state
 
 
-class Transaction(object):
+class Transaction(mixins.Snowflake):
     """A single transaction within a captable -- most used as a baseclass for
     other transactions
 
