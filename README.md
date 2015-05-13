@@ -20,7 +20,7 @@ TODO
 * [x] Error tracking
 * [ ] Validation rules
 * [ ] Persons
-* [ ] Issuance of Stock
+* [ ] Retirement of Stock
 * [ ] Expiration of Stock
 * [ ] Reservation of Stock
 * [ ] Convertible Securities
