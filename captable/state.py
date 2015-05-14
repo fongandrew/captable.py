@@ -33,18 +33,21 @@ class SecuritiesState(EqualityMixin):
     """Represents the state of a particular class of captable securities
 
     Args:
-        authorized (integer) - Optional total number of shares of this security
-            to authorize, defaults to 0
+        authorized (int) - Total number of shares of this security to authorize
+        reissue (bool) - Can retired stock be reissued? Defaults to true
+            per DGCL 243.
 
     Properties:
-        authorized (integer) - Total number of shares of this security 
+        authorized (int) - Total number of authorized shares
         issuances (list) - List of all issuances of this security
+        reservations (list) - List of all reservations of this security
     """
-    def __init__(self, authorized=0):
+    def __init__(self, authorized, reissue=True):
         self.authorized = authorized
         self.issuances = []
         self.reservations = []
         self.retirements = []
+        self.reissue = reissue
 
     @property
     def outstanding(self):
@@ -52,19 +55,20 @@ class SecuritiesState(EqualityMixin):
         return 0 #TODO
 
     @property
-    def reserved(self):
-        """Number of shares reserved for later issuance"""
+    def issued(self):
+        """Number of shares issued, which may or may not be outstanding"""
         return 0 #TODO
 
     @property
-    def retired(self):
-        """Number of shares retired and no longer issuable"""
+    def reserved(self):
+        """Number of shares reserved for later issuance"""
         return 0 #TODO
         
     @property
     def issuable(self):
         """Number of shares available for issuance"""
-        return self.authorized - self.outstanding - self.retired
+        ret = self.authorized - self.outstanding - self.retired
+        return ret
     
     @property
     def unreserved(self):
@@ -85,7 +89,14 @@ class SecuritiesState(EqualityMixin):
         pass
 
     def retire(self, shares, txn): #TODO
-        pass
+        if self.reissue: 
+            # If allowed to re-issued retired shares, then retired shares 
+            # should resume the status of authorized and unissued shares
+            pass
+
+        else:
+            # Retirement reduces the number of authorized
+            pass 
 
 
 class Issuance(object): #TODO
@@ -93,11 +104,6 @@ class Issuance(object): #TODO
     """
     def __init__(self, person, cls, amount, cert_no=None):
         pass
-
-
-class Retirement(Issuance): #TODO
-    """A record of some amount and class of stock being retired"""
-    pass
 
 
 class Reservation(object): #TODO
