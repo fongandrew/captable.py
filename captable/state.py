@@ -25,8 +25,8 @@ class CapTableState(EqualityMixin):
         warning = TransactionWarning(self.last_txn, msg, self)
         self.warnings.append(warning)
 
-    def get_amounts(self, security):
-        return self.securities.setdefault(security, SecuritiesState())
+    def get_security_state(self, security):
+        return self.securities.setdefault(security, SecuritiesState(0))
 
 
 class SecuritiesState(EqualityMixin):
@@ -46,7 +46,6 @@ class SecuritiesState(EqualityMixin):
         self.authorized = authorized
         self.issuances = []
         self.reservations = []
-        self.retirements = []
         self.reissue = reissue
 
     @property
@@ -67,8 +66,7 @@ class SecuritiesState(EqualityMixin):
     @property
     def issuable(self):
         """Number of shares available for issuance"""
-        ret = self.authorized - self.outstanding - self.retired
-        return ret
+        return self.authorized - self.outstanding
     
     @property
     def unreserved(self):

@@ -24,19 +24,17 @@ class AuthTests(unittest.TestCase):
     def test_authorize_amount(self):
         """Table should have list outstanding amounts for each class
         """
-        amountsA = self.table_state.get_amounts(CLASS_A_COMMON)
+        amountsA = self.table_state.get_security_state(CLASS_A_COMMON)
         self.assertEqual(amountsA.authorized, 1000000)
         self.assertEqual(amountsA.issuable, 1000000)
         self.assertEqual(amountsA.unreserved, 1000000)
         self.assertEqual(amountsA.outstanding, 0)
-        self.assertEqual(amountsA.retired, 0)
 
-        amountsB = self.table_state.get_amounts(CLASS_B_COMMON)
+        amountsB = self.table_state.get_security_state(CLASS_B_COMMON)
         self.assertEqual(amountsB.authorized, 500000)
         self.assertEqual(amountsB.issuable, 500000)
         self.assertEqual(amountsB.unreserved, 500000)
         self.assertEqual(amountsB.outstanding, 0)
-        self.assertEqual(amountsB.retired, 0)
 
 
 # class MultipleAuthTests(AuthTests):

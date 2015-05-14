@@ -77,9 +77,9 @@ class AuthTransaction(Transaction):
 
     def process(self, state):
         "Processing an AuthTransaction means setting the amount to a set value"
-        amounts = state.get_amounts(self.security)
+        security_state = state.get_security_state(self.security)
         if self.amount:
-            amounts.authorized = self.amount
+            security_state.authorized = self.amount
         elif self.delta:
-            amounts.authorized += self.delta
+            security_state.authorized += self.delta
 
