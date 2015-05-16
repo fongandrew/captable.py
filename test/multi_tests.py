@@ -2,7 +2,7 @@ from __future__ import absolute_import
 
 import captable
 import datetime
-from ._helpers import StubTransaction
+from ._helpers import StubTransaction, ErrorTransaction
 
 def test_multi_txn():
     """Should be able to combine multiple transactions into a single 
@@ -32,3 +32,18 @@ def test_multi_txn():
     # Processing should respect multi transaction datetimes
     state = table.process(datetime.datetime(2015,5,1))
     StubTransaction.check(state, txn_1, txn_2)
+
+def test_multi_txn_rollback():
+    """Multi transaction should rollback all if any has error"""
+    table = captable.CapTable()
+    txn_1 = StubTransaction()
+    txn_2 = ErrorTransaction()
+    table.record_multi_txn(txns=[txn_1, txn_2],
+                           txn_datetime=datetime.datetime(2015,5,1))
+    txn_3 = StubTransaction(txn_datetime=datetime.datetime(2015,5,2))
+    table.record_txn(txn_3)
+
+    state = table.process(ignore_errors=True)
+
+    # Neither txn_1 nor txn_2 should have processed
+    StubTransaction.check(state, txn_3)

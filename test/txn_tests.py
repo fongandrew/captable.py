@@ -4,7 +4,7 @@ import captable
 import unittest
 import datetime
 import pytest
-from ._helpers import StubTransaction
+from ._helpers import StubTransaction, ErrorTransaction
 
 
 class TransactionTests(unittest.TestCase):
@@ -39,13 +39,6 @@ class TransactionTests(unittest.TestCase):
         state = self.table.process(datetime.datetime(2015, 5, 2))
         StubTransaction.check(state, self.txn_1, self.txn_2)
 
-
-class ErrorTransaction(StubTransaction):
-    """Simulates an exception raised after state changes"""
-    def process(self, state):
-        super(ErrorTransaction, self).process(state)
-        raise RuntimeError("Boom")
-
 def test_rollback():
     """Test that throwing an error roll backs the transaction"""
     table = captable.CapTable()
@@ -64,4 +57,23 @@ def test_rollback():
     
     # Only txn1 should have processed
     StubTransaction.check(state, txn_1)
+
+def test_ignore():
+    """Test that we can process with ignored errors"""
+    table = captable.CapTable()
+    txn_1 = StubTransaction(txn_datetime=datetime.datetime(2015,5,1))
+    txn_2 = ErrorTransaction(txn_datetime=datetime.datetime(2015,5,2))
+    txn_3 = StubTransaction(txn_datetime=datetime.datetime(2015,5,3))
+
+    table.record_txn(txn_1)
+    table.record_txn(txn_2)
+    table.record_txn(txn_3)
+
+    state = table.process(ignore_errors=True)
+
+    # Check that a warning was logged
+    assert len(state.warnings) == 1
+    
+    # Txn2 should have been ignored
+    StubTransaction.check(state, txn_1, txn_3)
 

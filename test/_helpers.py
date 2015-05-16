@@ -17,3 +17,9 @@ class StubTransaction(captable.Transaction):
             assert state.stubs_processed == list(txns)
         else:
             assert (not txns), "Stubs processed not set"
+
+class ErrorTransaction(StubTransaction):
+    """Simulates an exception raised after state changes"""
+    def process(self, state):
+        super(ErrorTransaction, self).process(state)
+        raise RuntimeError("Boom")

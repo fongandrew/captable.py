@@ -33,14 +33,31 @@ class CapTable(object):
         )
         self.record_txn(multi_txn)
 
-    def process(self, table_state=None, to_time=None, quiet_errors=False):
+    def process(self, table_state=None, to_time=None, quiet_errors=False, 
+                ignore_errors=False):
         """Process transactions up to (and including) a particular time and 
-        returns date as of that time"""
+        returns state as of that time
+
+        Args:
+            table_state (CapTableState) - Optional cap table state to start
+                processing from
+            to_time (datetime) - What datetime to process up to (and including)
+            quiet_errors (bool) - If true, then errors are caught and logged
+                as warnings. Note that execution still stops unless the 
+                continue keyword is set. The transaction triggering the error
+                is rolled back.
+            ignore_errors (bool) - If this is set, then exceptions are logged 
+                as warnings but ignored and do not halt execution. Transactions
+                with errors will be rolled back. Implies quiet_errors.
+        """
 
         # If only arg is a datetime, treat as datetime instead of state
         if to_time == None and isinstance(table_state, datetime.datetime):
             to_time = table_state
             table_state = None
+
+        # Ignore_errors implies quiet_errors
+        quiet_errors = quiet_errors or ignore_errors
 
         if not table_state: # Set table state to default
             table_state = state.CapTableState()
@@ -66,7 +83,10 @@ class CapTable(object):
                 except Exception, e:
                     table_state.warn(e)
                     if quiet_errors:
-                        break # Stop execution but don't fail
+                        if ignore_errors:
+                            continue # Loop back
+                        else:
+                            break # Stop execution but don't fail
                     else:
                         raise # Just re-raise
             else:
