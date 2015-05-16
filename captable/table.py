@@ -5,6 +5,7 @@ from __future__ import absolute_import
 from .logger import logger
 from . import transactions
 from . import state
+import datetime
 
 class CapTable(object):
     """Represents a captable for a company -- functions as a list of
@@ -31,10 +32,19 @@ class CapTable(object):
         )
         self.record_txn(multi_txn)
 
-    def process(self, to_time=None):
+    def process(self, table_state=None, to_time=None):
         """Process transactions up to (and including) a particular time and 
         returns date as of that time"""
-        table_state = state.CapTableState();
+
+        # If only arg is a datetime, treat as datetime instead of state
+        if to_time == None and isinstance(state, datetime.datetime):
+            to_time = table_state
+            table_state = None
+
+        if not table_state: # Set table state to default
+            table_state = state.CapTableState()
+        elif not isinstance(table_state, state.CapTableState):
+            raise ValueError("table_state should be CapTableState object")
 
         # Process only to to_time (assumes self.transactions is ordered)
         for txn in self.transactions:
