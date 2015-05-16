@@ -3,6 +3,7 @@ from __future__ import absolute_import
 import captable
 import unittest
 import datetime
+import pytest
 from ._helpers import StubTransaction
 
 
@@ -37,3 +38,30 @@ class TransactionTests(unittest.TestCase):
         (and including) that exact time"""
         state = self.table.process(datetime.datetime(2015, 5, 2))
         StubTransaction.check(state, self.txn_1, self.txn_2)
+
+
+class ErrorTransaction(StubTransaction):
+    """Simulates an exception raised after state changes"""
+    def process(self, state):
+        super(ErrorTransaction, self).process(state)
+        raise RuntimeError("Boom")
+
+def test_rollback():
+    """Test that throwing an error roll backs the transaction"""
+    table = captable.CapTable()
+    txn_1 = StubTransaction(txn_datetime=datetime.datetime(2015,5,1))
+    txn_2 = ErrorTransaction(txn_datetime=datetime.datetime(2015,5,2))
+    txn_3 = StubTransaction(txn_datetime=datetime.datetime(2015,5,3))
+
+    table.record_txn(txn_1)
+    table.record_txn(txn_2)
+    table.record_txn(txn_3)
+
+    state = table.process(quiet_errors=True)
+
+    # Check that a warning was logged
+    assert len(state.warnings) == 1
+    
+    # Only txn1 should have processed
+    StubTransaction.check(state, txn_1)
+
