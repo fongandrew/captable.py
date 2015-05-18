@@ -19,7 +19,7 @@ TODO
 * [x] Transactional failure, rollback
 * [x] Authorization of Stock
 * [x] Validation rules
-* [ ] Persons
+* [x] Persons
 * [ ] Issuance of Stock
 * [ ] Retirement of Stock
 * [ ] Reservation of Stock
