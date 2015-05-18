@@ -4,7 +4,6 @@ from __future__ import absolute_import
 
 from .logger import logger
 from .state import CapTableState
-import datetime
 import copy
 
 class CapTable(object):
@@ -63,4 +62,18 @@ class CapTable(object):
 
     def record_multi(self, datetime_, *txns):
         """Record multiple transactions as a single transaction"""
-        pass #TODO
+        if len(txns) == 0:
+            raise ValueError("No transactions provided")
+        self.record(datetime_, MultiTransaction(*txns))
+        
+
+class MultiTransaction(object):
+    "An object that combines multiple transactions into a single transaction"
+    def __init__(self, *txns):
+        self.txns = txns
+
+    def __call__(self, datetime_, state):
+        """Prcess all sub-transactions"""
+        for txn in self.txns:
+            state = txn(datetime_, state)
+        return state
