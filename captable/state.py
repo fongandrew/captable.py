@@ -3,27 +3,18 @@
 from __future__ import absolute_import
 
 from .mixins import EqualityMixin
-import copy
 
 
 class CapTableState(EqualityMixin):
-    """Represents a captable at a particular point in time
+    """Represents the actual state of a CapTable. Everything in here should
+    be easily copyable or comparable.
 
     Properties:
         securities (dict): A dict mapping an instance of Securities to
             a SecuritiesState instance
-        warnings (list): List of warnings tracked while processing
-        last_txn (Transaction): Last transaction to process this state. Should
-            be set by CapTable.process
     """
     def __init__(self):
         self.securities = {}
-        self.warnings = []
-        self.last_txn = None
-
-    def warn(self, msg):
-        warning = TransactionWarning(self.last_txn, msg, self)
-        self.warnings.append(warning)
 
     def get_security_state(self, security):
         return self.securities.setdefault(security, SecuritiesState(0))
@@ -108,24 +99,3 @@ class Reservation(object): #TODO
     """A reservation of some amount of amount and class and stock for some
     future purpose"""
     pass
-
-
-class TransactionWarning(object):
-    """Non-fatal indication that something is wrong with the current captable
-    state. Processing can still proceed, but this should be checked.
-
-    Args:
-        txn (Transaction) - The transaction triggering this warning
-        msg (str) - A message explaining the reason for the warning
-        state (CapTableState) - The current CapTable state
-
-    Properties:
-        txn (Transaction) - The transaction triggering this warning
-        msg (str) - A message explaining the reason for the warning
-        state (CapTableState) - A copy of the CapTable state at the time the
-            warning is created
-    """
-    def __init__(self, txn, msg, state):
-        self.txn = txn
-        self.msg = msg
-        self.state = copy.deepcopy(state)

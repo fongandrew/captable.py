@@ -6,7 +6,9 @@ class EqualityMixin(object):
     if all attributes match
     """
     def __eq__(self, other):
-        return vars(self) == vars(other)
+        if other:
+            return vars(self) == vars(other)
+        return False
 
 
 class Snowflake(object):

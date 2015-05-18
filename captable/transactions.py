@@ -23,9 +23,6 @@ class Transaction(mixins.Snowflake):
     def __str__(self):
         return self.__class__.__name__ + " @ " + str(self.datetime)
 
-    def process(self, state):
-        raise NotImplementedError
-
 
 class MultiTransaction(Transaction):
     "An object that combines multiple transactions into a single transaction"
@@ -42,10 +39,10 @@ class MultiTransaction(Transaction):
         for txn in self.transactions:
             txn.datetime = self.datetime # Conform all datetimes
 
-    def process(self, state):
+    def __call__(self, state):
         """Prcess all sub-transactions"""
         for txn in self.transactions:
-            txn.process(state)
+            txn(state)
 
 
 class AuthTransaction(Transaction):
@@ -75,7 +72,7 @@ class AuthTransaction(Transaction):
         self.amount = amount
         self.delta = delta
 
-    def process(self, state):
+    def __call__(self, state):
         "Processing an AuthTransaction means setting the amount to a set value"
         security_state = state.get_security_state(self.security)
         if self.amount:

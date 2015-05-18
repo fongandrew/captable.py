@@ -1,15 +1,17 @@
 from __future__ import absolute_import
 
 import captable
+from captable.mixins import Snowflake
 
-class StubTransaction(captable.Transaction):
+class StubTransaction(Snowflake):
     """
     Helper used for testing purposes
     """
-    def process(self, state):
+    def __call__(self, datetime_, state):
         if not hasattr(state, "stubs_processed"):
             state.stubs_processed = []
         state.stubs_processed.append(self);
+        return state
 
     @classmethod
     def check(cls, state, *txns):
@@ -20,6 +22,6 @@ class StubTransaction(captable.Transaction):
 
 class ErrorTransaction(StubTransaction):
     """Simulates an exception raised after state changes"""
-    def process(self, state):
-        super(ErrorTransaction, self).process(state)
+    def __call__(self, state):
+        state = super(ErrorTransaction, self).process(state)
         raise RuntimeError("Boom")

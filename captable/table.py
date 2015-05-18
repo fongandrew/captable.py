@@ -3,92 +3,64 @@
 from __future__ import absolute_import
 
 from .logger import logger
-from . import transactions
-from . import state
+from .state import CapTableState
 import datetime
 import copy
 
 class CapTable(object):
-    """Represents a captable for a company -- functions as a list of
-    transactions for all intents and purposes
-    """ 
+    """Represents a cap table for a company. This is really a wrapper around
+    CapTableState that handles transactional changes to the table."""
+
     def __init__(self):
-        """Can be constructed with a list of initial security types"""
-        # List of all transactions within this table
+        # List of 2-tuples containing the datetime and transaction of each
+        # transaction successfully processed for this table
         self.transactions = []
 
-    def record_txn(self, txn):
-        """Record a single transaction"""
-        if (not isinstance(txn, transactions.Transaction)):
-            raise ValueError("Can only record transactions"
-                             "of Transaction class")
-        self.transactions.append(txn)
-        self.transactions.sort(key=(lambda txn: txn.datetime))
+        # A dict containing actual state data. All state information should
+        # live here to make reversion easier.
+        self.state = CapTableState()
 
-    def record_multi_txn(self, txns, txn_datetime=None):
-        """Record multiple transactions"""
-        multi_txn = transactions.MultiTransaction(
-            txns=txns,
-            txn_datetime=txn_datetime
-        )
-        self.record_txn(multi_txn)
+    @property
+    def datetime(self):
+        """What 'time' is the table currently at -- defaults to datetime of 
+        last recorded transaction"""
+        if self.transactions:
+            return self.transactions[-1][0]
+        return None
 
-    def process(self, table_state=None, to_time=None, quiet_errors=False, 
-                ignore_errors=False):
-        """Process transactions up to (and including) a particular time and 
-        returns state as of that time
+    def record(self, datetime_, txn):
+        """Record a single transaction
 
         Args:
-            table_state (CapTableState) - Optional cap table state to start
-                processing from
-            to_time (datetime) - What datetime to process up to (and including)
-            quiet_errors (bool) - If true, then errors are caught and logged
-                as warnings. Note that execution still stops unless the 
-                continue keyword is set. The transaction triggering the error
-                is rolled back.
-            ignore_errors (bool) - If this is set, then exceptions are logged 
-                as warnings but ignored and do not halt execution. Transactions
-                with errors will be rolled back. Implies quiet_errors.
+            datetime_ (datetime) - The date and time at which the transaction 
+                occurs
+            txn (callable) - A callable object that will be called with
+                datetime_ and the current state of the captable. This callable
+                should return the new, modified state.
         """
+        if not callable(txn):
+            raise ValueError("Transaction must be callable")
 
-        # If only arg is a datetime, treat as datetime instead of state
-        if to_time == None and isinstance(table_state, datetime.datetime):
-            to_time = table_state
-            table_state = None
+        current = self.datetime
+        if current and current > datetime_:
+            raise ValueError("Cannot record transaction older that current "
+                "captable state. Current datetime is %s, record call was for "
+                "%s" % (repr(current), repr(datetime_)))
 
-        # Ignore_errors implies quiet_errors
-        quiet_errors = quiet_errors or ignore_errors
+        # When processing transaction, pass a copy of state to simplify the
+        # commit/rollback process.
+        new_state = txn(datetime_, copy.deepcopy(self.state))
 
-        if not table_state: # Set table state to default
-            table_state = state.CapTableState()
-        elif not isinstance(table_state, state.CapTableState):
-            raise ValueError("table_state should be CapTableState object")
+        # Make sure transaction remembered to return new state state
+        if new_state == None:
+            raise RuntimeError("Transaction did not return new state data")
 
-        # Process only to to_time (assumes self.transactions is ordered)
-        for txn in self.transactions:
-            if (not to_time) or (txn.datetime <= to_time):
-                logger.debug("Processing " + str(txn))
+        # If txn succeeds, "commit" the return value as the new state
+        self.state = new_state
 
-                # Create a copy before initating processing
-                copy_state = copy.deepcopy(table_state)
+        # Record actual transaction and datetime
+        self.transactions.append((datetime_, txn))
 
-                copy_state.last_txn = txn
-                try:
-                    txn.process(copy_state)
-
-                    # If no exceptions, make the current state the next
-                    # processing state
-                    table_state = copy_state
-
-                except Exception, e:
-                    table_state.warn(e)
-                    if quiet_errors:
-                        if ignore_errors:
-                            continue # Loop back
-                        else:
-                            break # Stop execution but don't fail
-                    else:
-                        raise # Just re-raise
-            else:
-                break
-        return table_state;
+    def record_multi(self, datetime_, *txns):
+        """Record multiple transactions as a single transaction"""
+        pass #TODO
