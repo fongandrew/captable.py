@@ -36,9 +36,20 @@ class AuthTransaction(object):
     def __call__(self, datetime_, state):
         "Processing an AuthTransaction means setting the amount to a set value"
         security_state = state[self.security]
+
+        # If both supplied, validate (amount var will alter state in below)
+        if self.amount != None and self.delta != None:
+            assert security_state.authorized + self.delta == self.amount, \
+                "Authorization amount inconsistent delta: %s + %s != %s" % \
+                (security_state.authorized, self.delta, self.amount)
+
+        # If amount, replace
         if self.amount:
             security_state.authorized = self.amount
+
+        # If only delta, increment
         elif self.delta:
             security_state.authorized += self.delta
+
         return state
 

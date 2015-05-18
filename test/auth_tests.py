@@ -3,6 +3,7 @@ from __future__ import absolute_import
 import captable
 import unittest
 import datetime
+import pytest
 
 
 CLASS_A_COMMON = captable.CommonStock("Class A Common Stock")
@@ -18,21 +19,19 @@ class AuthTests(unittest.TestCase):
         self.table.record_multi(datetime.datetime(2015,5,9),
             captable.AuthTransaction(security=CLASS_A_COMMON, amount=1000000),
             captable.AuthTransaction(security=CLASS_B_COMMON, amount=500000))
+
+    def checkAuth(self, security, total):
+        amounts = self.table.state[security]
+        self.assertEqual(amounts.authorized, total)
+        self.assertEqual(amounts.issuable, total)
+        self.assertEqual(amounts.unreserved, total)
+        self.assertEqual(amounts.outstanding, 0)
     
     def test_authorize_amount(self):
         """Table should have list outstanding amounts for each class
         """
-        amountsA = self.table.state[CLASS_A_COMMON]
-        self.assertEqual(amountsA.authorized, 1000000)
-        self.assertEqual(amountsA.issuable, 1000000)
-        self.assertEqual(amountsA.unreserved, 1000000)
-        self.assertEqual(amountsA.outstanding, 0)
-
-        amountsB = self.table.state[CLASS_B_COMMON]
-        self.assertEqual(amountsB.authorized, 500000)
-        self.assertEqual(amountsB.issuable, 500000)
-        self.assertEqual(amountsB.unreserved, 500000)
-        self.assertEqual(amountsB.outstanding, 0)
+        self.checkAuth(CLASS_A_COMMON, 1000000)
+        self.checkAuth(CLASS_B_COMMON, 500000)
 
 
 class MultipleAuthTests(AuthTests):
@@ -45,39 +44,36 @@ class MultipleAuthTests(AuthTests):
     def test_authorize_amount(self):
         """Old classes should be unchanged -- specified class should have new
         updated numbers"""
-        amountsA = self.table.state[CLASS_A_COMMON]
-        self.assertEqual(amountsA.authorized, 1000000)
-        self.assertEqual(amountsA.issuable, 1000000)
-        self.assertEqual(amountsA.unreserved, 1000000)
-        self.assertEqual(amountsA.outstanding, 0)
-
-        amountsB = self.table.state[CLASS_B_COMMON]
-        self.assertEqual(amountsB.authorized, 750000)
-        self.assertEqual(amountsB.issuable, 750000)
-        self.assertEqual(amountsB.unreserved, 750000)
-        self.assertEqual(amountsB.outstanding, 0)
+        self.checkAuth(CLASS_A_COMMON, 1000000)
+        self.checkAuth(CLASS_B_COMMON, 750000)
 
 
-class DeltaAuthTests(AuthTests):
+class DeltaAuthTests(MultipleAuthTests):
     def setUp(self):
         """Authorize a delta change to the number of shares of stock"""
-        super(DeltaAuthTests, self).setUp()
+        super(MultipleAuthTests, self).setUp()
         self.table.record(datetime.datetime(2015,5,10),
             captable.AuthTransaction(security=CLASS_B_COMMON, delta=250000))
 
-    def test_authorize_amount(self):
-        """Old classes should be unchanged -- specified class should have new
-        updated numbers"""
-        amountsA = self.table.state[CLASS_A_COMMON]
-        self.assertEqual(amountsA.authorized, 1000000)
-        self.assertEqual(amountsA.issuable, 1000000)
-        self.assertEqual(amountsA.unreserved, 1000000)
-        self.assertEqual(amountsA.outstanding, 0)
 
-        amountsB = self.table.state[CLASS_B_COMMON]
-        self.assertEqual(amountsB.authorized, 750000)
-        self.assertEqual(amountsB.issuable, 750000)
-        self.assertEqual(amountsB.unreserved, 750000)
-        self.assertEqual(amountsB.outstanding, 0)
+class DeltaPlusAmountAuthTests(MultipleAuthTests):
+    def setUp(self):
+        """Authorize a delta change to the number of shares of stock along
+        with a conforming amount"""
+        super(MultipleAuthTests, self).setUp()
+        self.table.record(datetime.datetime(2015,5,10),
+            captable.AuthTransaction(security=CLASS_B_COMMON,
+                                     delta=250000,
+                                     amount=750000))
 
-# amount / delta - error check
+
+def test_delta_amount_mismatch():
+    """Mismatch between delta number and amount number should raise an
+    AssertionError"""
+    table = captable.CapTable()
+    table.record(datetime.datetime(2015,5,9),
+        captable.AuthTransaction(security=CLASS_A_COMMON, amount=500000))
+    with pytest.raises(AssertionError):
+        table.record(datetime.datetime(2015,5,10),
+            captable.AuthTransaction(security=CLASS_A_COMMON,
+                                     amount=1000000, delta=250000))
