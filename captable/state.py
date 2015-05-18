@@ -3,6 +3,7 @@
 from __future__ import absolute_import
 
 from .mixins import EqualityMixin
+from .securities import Security
 
 
 class CapTableState(EqualityMixin):
@@ -16,8 +17,15 @@ class CapTableState(EqualityMixin):
     def __init__(self):
         self.securities = {}
 
-    def get_security_state(self, security):
+    def get_security(self, security):
+        if not isinstance(security, Security):
+            raise ValueError("Not a Security instance")
         return self.securities.setdefault(security, SecuritiesState(0))
+
+    def __getitem__(self, key):
+        if isinstance(key, Security):
+            return self.get_security(key)
+        raise KeyError("Unknown key type - %s" % repr(key))
 
 
 class SecuritiesState(EqualityMixin):

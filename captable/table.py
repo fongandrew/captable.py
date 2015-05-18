@@ -76,4 +76,7 @@ class MultiTransaction(object):
         """Prcess all sub-transactions"""
         for txn in self.txns:
             state = txn(datetime_, state)
+            if state == None:
+                raise RuntimeError("Transaction part did not return new "
+                                   "state data")
         return state
