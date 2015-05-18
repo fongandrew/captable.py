@@ -4,13 +4,15 @@ from __future__ import absolute_import
 
 from .logger import logger
 from .state import CapTableState
+from .validation import DEFAULT_VALIDATORS
 import copy
+import datetime
 
 class CapTable(object):
     """Represents a cap table for a company. This is really a wrapper around
     CapTableState that handles transactional changes to the table."""
 
-    def __init__(self):
+    def __init__(self, validators=DEFAULT_VALIDATORS):
         # List of 2-tuples containing the datetime and transaction of each
         # transaction successfully processed for this table
         self.transactions = []
@@ -18,6 +20,11 @@ class CapTable(object):
         # A dict containing actual state data. All state information should
         # live here to make reversion easier.
         self.state = CapTableState()
+
+        # Validators are called after each transaction recording to verify
+        # state. Note that validators are called after all transactions in
+        # a multi-transaction have been called.
+        self.validators = validators
 
     @property
     def datetime(self):
@@ -32,13 +39,16 @@ class CapTable(object):
 
         Args:
             datetime_ (datetime) - The date and time at which the transaction 
-                occurs
+                occurs. Pass None to use current time.
             txn (callable) - A callable object that will be called with
                 datetime_ and the current state of the captable. This callable
                 should return the new, modified state.
         """
         if not callable(txn):
             raise ValueError("Transaction must be callable")
+
+        if not datetime_:
+            datetime_ = datetime.datetime.now()
 
         current = self.datetime
         if current and current > datetime_:
@@ -53,6 +63,10 @@ class CapTable(object):
         # Make sure transaction remembered to return new state state
         if new_state == None:
             raise RuntimeError("Transaction did not return new state data")
+
+        # Validate the new state
+        for validate in self.validators:
+            validate(new_state)
 
         # If txn succeeds, "commit" the return value as the new state
         self.state = new_state

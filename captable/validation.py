@@ -10,17 +10,13 @@ from __future__ import absolute_import
 
 from .state import SecuritiesState
 
-def check_amounts(state):
+def check_auth(state):
     """Check the SecuritiesState and makes sure amounts add up"""
     if state.securities:
-        for cls, amounts in state.securities.iteritems():
-            if (amounts.authorized < amounts.issued):
-                msg = (cls.name + " Warning: " + amounts.issued + 
-                       " issued but only " + amounts.authorized + " authorized")
-                state.warn(msg)
-            elif (amounts.issued < amounts.outstanding):
-                msg = (cls.name + " Warning: " + amounts.outstanding + 
-                       " outstanding but only " + amounts.issued + " issued")
-                state.warn(msg)
+        for sec, amounts in state.securities.iteritems():
+            assert amounts.authorized >= amounts.issued, (
+                sec.name + " Warning: " + amounts.issued + 
+                " issued but only " + amounts.authorized + " authorized"
+            )
 
-DEFAULT_VALIDATORS = [check_amounts]
+DEFAULT_VALIDATORS = [check_auth]

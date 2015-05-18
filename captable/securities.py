@@ -19,4 +19,5 @@ class Stock(Security):
     pass
 
 class CommonStock(Stock):
-    pass
+    def __init__(self, name="Common Stock"):
+        super(CommonStock, self).__init__(name)

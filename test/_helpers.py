@@ -20,6 +20,13 @@ class StubTransaction(Snowflake):
         else:
             assert (not txns), "Stubs processed not set"
 
+    @classmethod
+    def count(cls, state):
+        if hasattr(state, 'stubs_processed'):
+            return len(state.stubs_processed)
+        return 0
+
+
 class ErrorTransaction(StubTransaction):
     """Simulates an exception raised after state changes"""
     def __call__(self, *args, **kwds):
