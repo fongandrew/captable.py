@@ -44,6 +44,22 @@ def test_forward_time_only():
     with pytest.raises(ValueError):
         table.record(datetime.datetime(2015, 4, 1), txn_3)
 
+def test_rollback():
+    """Failed transaction should not modify state"""
+    table = captable.CapTable()
+    txn_1 = StubTransaction()
+    txn_2 = ErrorTransaction()
+
+    with pytest.raises(RuntimeError):
+        table.record(datetime.datetime(2015, 5, 1), txn_1)
+        table.record(datetime.datetime(2015, 5, 2), txn_2)
+    
+    # Only txn1 should have processed
+    assert table.transactions == [
+        (datetime.datetime(2015, 5, 1), txn_1)
+    ]
+    StubTransaction.check(table.state, txn_1)
+
 
 # class TransactionTests(unittest.TestCase):
 #     """Test adding transactions and processing them"""

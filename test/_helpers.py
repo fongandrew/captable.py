@@ -22,6 +22,6 @@ class StubTransaction(Snowflake):
 
 class ErrorTransaction(StubTransaction):
     """Simulates an exception raised after state changes"""
-    def __call__(self, state):
-        state = super(ErrorTransaction, self).process(state)
+    def __call__(self, *args, **kwds):
+        state = super(ErrorTransaction, self).__call__(*args, **kwds)
         raise RuntimeError("Boom")
