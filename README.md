@@ -18,15 +18,16 @@ TODO
 * [x] Transaction processing basics
 * [x] Transactional failure, rollback
 * [x] Authorization of Stock
-* [ ] Validation rules
+* [x] Validation rules
 * [ ] Persons
+* [ ] Issuance of Stock
 * [ ] Retirement of Stock
-* [ ] Expiration of Stock
 * [ ] Reservation of Stock
 * [ ] Convertible Securities
   * [ ] Prefered Stock
   * [ ] Convertible Debt
 * [ ] Stock Plans
   * [ ] Options
+* [ ] Expiration of Securities
 * [ ] Waterfall/Liquidation Analysis
 * [ ] Related Persons / Voting Analysis
