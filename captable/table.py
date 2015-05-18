@@ -57,7 +57,7 @@ class CapTable(object):
         # If txn succeeds, "commit" the return value as the new state
         self.state = new_state
 
-        # Record actual transaction and datetime
+        # Record actual transaction and datetime as 2-tuple
         self.transactions.append((datetime_, txn))
 
     def record_multi(self, datetime_, *txns):
