@@ -12,8 +12,6 @@ class ClassACommon(captable.CommonStock):
 class ClassBCommon(captable.CommonStock):
     name = "Class B Common Stock"
 
-print ClassACommon.name
-
 
 class AuthTests(unittest.TestCase):
     """Test authorization of classes of securities"""
@@ -26,7 +24,7 @@ class AuthTests(unittest.TestCase):
                                 ClassACommon.auth(1000000),
                                 ClassBCommon.auth(500000))
 
-    def checkAuth(self, security, total):
+    def check_auth(self, security, total):
         amounts = self.table[security]
         self.assertEqual(amounts.authorized, total)
         self.assertEqual(amounts.issuable, total)
@@ -36,8 +34,8 @@ class AuthTests(unittest.TestCase):
     def test_authorize_amount(self):
         """Table should have list outstanding amounts for each class
         """
-        self.checkAuth(ClassACommon, 1000000)
-        self.checkAuth(ClassBCommon, 500000)
+        self.check_auth(ClassACommon, 1000000)
+        self.check_auth(ClassBCommon, 500000)
 
 
 class MultipleAuthTests(AuthTests):
@@ -50,8 +48,8 @@ class MultipleAuthTests(AuthTests):
     def test_authorize_amount(self):
         """Old classes should be unchanged -- specified class should have new
         updated numbers"""
-        self.checkAuth(ClassACommon, 1000000)
-        self.checkAuth(ClassBCommon, 750000)
+        self.check_auth(ClassACommon, 1000000)
+        self.check_auth(ClassBCommon, 750000)
 
 
 class DeltaAuthTests(MultipleAuthTests):
