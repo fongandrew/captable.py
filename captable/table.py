@@ -33,18 +33,20 @@ class CapTable(object):
             return self.transactions[-1][0]
         return None
 
-    def record(self, datetime_, txn):
+    def record(self, datetime_, *txns):
         """Record a single transaction
 
         Args:
             datetime_ (datetime) - The date and time at which the transaction 
                 occurs. Pass None to use current time.
-            txn (callable) - A callable object that will be called with
-                datetime_ and the current state of the captable. This callable
-                should return the new, modified state.
+            txns (list) - List of callables that will be called with
+                datetime_ and the current state of the captable. Each callable
+                should return the new, modified state. If more than one
+                callable, will be recorded as a single transaction that all
+                succeed or fail together.
         """
-        if not callable(txn):
-            raise ValueError("Transaction must be callable")
+        if len(txns) == 0:
+            raise ValueError("Must provide at least one transaction")
 
         if not datetime_:
             datetime_ = datetime.datetime.now()
@@ -55,13 +57,20 @@ class CapTable(object):
                 "captable state. Current datetime is %s, record call was for "
                 "%s" % (repr(current), repr(datetime_)))
 
-        # When processing transaction, pass a copy of state to simplify the
+        # When processing transactions, pass a copy of state to simplify the 
         # commit/rollback process.
-        new_state = txn(datetime_, copy.deepcopy(self.state))
+        new_state = copy.deepcopy(self.state)
 
-        # Make sure transaction remembered to return new state state
-        if new_state == None:
-            raise RuntimeError("Transaction did not return new state data")
+        # Process all transactions. 
+        for txn in txns:
+            if not callable(txn):
+                raise ValueError("Transaction must be callable")
+
+            new_state = txn(datetime_, new_state)
+
+            # Make sure transaction remembered to return new state state
+            if new_state == None:
+                raise RuntimeError("Transaction did not return new state data")
 
         # Validate the new state
         for validate in self.validators:
@@ -70,8 +79,9 @@ class CapTable(object):
         # If txn succeeds, "commit" the return value as the new state
         self.state = new_state
 
-        # Record actual transaction and datetime as 2-tuple
-        self.transactions.append((datetime_, txn))
+        # Record actual transactions and datetime as 2-tuple (or more if
+        # multiple transactions)
+        self.transactions.append((datetime_,) + txns)
 
     def record_multi(self, datetime_, *txns):
         """Record multiple transactions as a single transaction"""
