@@ -3,6 +3,7 @@
 from __future__ import absolute_import
 
 from . import mixins
+from .misc import classproperty
 
 
 class Security(mixins.Snowflake):
@@ -24,14 +25,13 @@ class Security(mixins.Snowflake):
     # under which we store security info
     STATE_KEY = 'securities'
 
-    # class __metaclass__(type):
-    #     @property
-    #     def name(cls):
-    #         """The name of this class of stock -- used to link together
-    #         different (successor) classes for what's intended to be the same
-    #         class of security"""
-    #         raise NotImplementedError
-        
+    @classproperty
+    def name(cls):
+        """The name of this class of stock -- used to link together
+        different (successor) classes for what's intended to be the same
+        class of security"""
+        raise NotImplementedError
+            
     @classmethod
     def __table_key__(cls, state):
         """A Security *class* can be used as a key in the CapTable state.
