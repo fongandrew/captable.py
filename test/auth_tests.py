@@ -77,3 +77,39 @@ def test_delta_amount_mismatch():
     with pytest.raises(AssertionError):
         table.record(datetime.datetime(2015,5,10),
                      ClassACommon.auth(delta=250000, amount=1000000))
+
+
+def test_update_metastate():
+    """If the name of two classes of stock is the same, then authorizing one,
+    then the other, should result in the latter's MetaState object replacing
+    the former
+    """
+    table = captable.CapTable()
+    table.record(datetime.datetime(2015,5,9), 
+                 captable.CommonStock.auth(500000))
+
+    metastate = table[captable.CommonStock]
+    assert metastate.__class__ == captable.CommonStock.MetaState
+
+    metastate.prop = 123
+
+    class CommonStock2(captable.CommonStock):
+        class MetaState(captable.CommonStock.MetaState):
+            pass
+    table.record(None, CommonStock2.auth())
+
+    # Class updated
+    metastate = table[captable.CommonStock]
+    assert metastate.__class__ == CommonStock2.MetaState
+    assert metastate.__class__ != captable.CommonStock.MetaState # Sanity check
+
+    # Properties preserved
+    assert metastate.prop == 123
+    assert metastate.authorized == 500000
+
+
+
+
+
+
+

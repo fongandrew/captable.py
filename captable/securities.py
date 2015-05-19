@@ -77,7 +77,7 @@ class Security(mixins.Snowflake):
             """Returns an instance of this class instantiated from a
             pre-decessor MetaState"""
             ret = cls()
-            cls.__dict__ = old_state.__dict__
+            ret.__dict__ = old_state.__dict__
             return ret
 
         def __init__(self):
