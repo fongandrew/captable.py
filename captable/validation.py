@@ -7,16 +7,15 @@ correctness. Transactions may do some validation themselves and may refuse to
 process or process differently if things don't check out.
 """
 from __future__ import absolute_import
-
-from .state import SecuritiesState
+from .securities import Security
 
 def check_auth(state):
     """Check the SecuritiesState and makes sure amounts add up"""
-    if state.securities:
-        for sec, amounts in state.securities.iteritems():
-            assert amounts.authorized >= amounts.issued, (
-                sec.name + " Warning: " + amounts.issued + 
-                " issued but only " + amounts.authorized + " authorized"
+    for name, metastate in state.get(Security.STATE_KEY, {}).iteritems():
+        if hasattr(metastate, "authorized") and hasattr(metastate, "issued"):
+            assert metastate.authorized >= metastate.issued, (
+                name + " Warning: " + metastate.issued + 
+                " issued but only " + metastate.authorized + " authorized"
             )
 
 DEFAULT_VALIDATORS = [check_auth]

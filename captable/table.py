@@ -3,7 +3,6 @@
 from __future__ import absolute_import
 
 from .logger import logger
-from .state import CapTableState
 from .validation import DEFAULT_VALIDATORS
 import copy
 import datetime
@@ -19,7 +18,7 @@ class CapTable(object):
 
         # A dict containing actual state data. All state information should
         # live here to make reversion easier.
-        self.state = CapTableState()
+        self.state = {}
 
         # Validators are called after each transaction recording to verify
         # state. Note that validators are called after all transactions in
@@ -79,6 +78,15 @@ class CapTable(object):
         if len(txns) == 0:
             raise ValueError("No transactions provided")
         self.record(datetime_, MultiTransaction(*txns))
+
+    def __getitem__(self, key):
+        """Shortcut for accessing the table's current state dict. If the key
+        is an object with a '__table_key__' method, will pass current state to
+        method for returning an object
+        """
+        if hasattr(key, '__table_key__'):
+            return key.__table_key__(self.state)
+        raise KeyError("%s does not have a '__table_key__' method" % repr(key))
         
 
 class MultiTransaction(object):

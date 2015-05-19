@@ -8,23 +8,19 @@ class StubTransaction(Snowflake):
     Helper used for testing purposes
     """
     def __call__(self, datetime_, state):
-        if not hasattr(state, "stubs_processed"):
-            state.stubs_processed = []
-        state.stubs_processed.append(self);
+        processed = state.setdefault("stubs_processed", [])
+        processed.append(self);
         return state
 
     @classmethod
     def check(cls, state, *txns):
-        if hasattr(state, 'stubs_processed'):
-            assert state.stubs_processed == list(txns)
-        else:
-            assert (not txns), "Stubs processed not set"
+        processed = state.get("stubs_processed", [])
+        assert processed == list(txns)
 
     @classmethod
     def count(cls, state):
-        if hasattr(state, 'stubs_processed'):
-            return len(state.stubs_processed)
-        return 0
+        processed = state.get("stubs_processed", [])
+        return len(processed)
 
 
 class ErrorTransaction(StubTransaction):
