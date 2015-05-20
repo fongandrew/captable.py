@@ -22,7 +22,7 @@ TODO
 * [x] Persons
 * [x] Issuance of Stock
 * [x] Transfer of Stock
-* [ ] Retirement of Stock
+* [x] Retirement of Stock
 * [ ] Purchase Price for Stock
 * [ ] Convertible Securities
   * [ ] Prefered Stock

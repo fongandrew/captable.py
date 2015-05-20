@@ -209,6 +209,10 @@ class Stock(Security):
     class MetaState(Security.MetaState):
         """Track authorized number of shares in addition to other security info
         """
+        # If set to True, then retired shares also reduce the total number of
+        # authorized shares
+        DEAUTH_RETIRED = False
+
         def __init__(self):
             super(Stock.MetaState, self).__init__()
             self.authorized = 0
@@ -249,6 +253,20 @@ class Stock(Security):
                 "Insufficient authorized: %s < %s + %s" % (
                 self.authorized, issuance.amount, self.issued)
             return super(Stock.MetaState, self).issue(issuance)
+
+    @classmethod
+    def retire(cls, cert_no=None):
+        """Retire a particular certificate of stock. If DEAUTH_RETIRED is 
+        true, then retirement is the same as cancellation.
+        """
+        def txn(datetime_, state):
+            state = cls.cancel(cert_no)(datetime_, state)
+            metastate = cls._in(state)
+            if metastate.DEAUTH_RETIRED:
+                cert = metastate[cert_no]
+                metastate.authorized -= cert.amount
+            return state
+        return txn
 
     def __init__(self, holder, amount, cert_no=None):
         super(Stock, self).__init__(holder=holder, cert_no=cert_no)

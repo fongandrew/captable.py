@@ -158,8 +158,53 @@ def test_cancel():
     assert metastate.outstanding == 2000
     assert metastate.issuable == 3000
 
-# def test_retire_stock_reissuable():
-#     """Test that retiring stock works allows for stock to be re-issuable again
-#     by default"""
-#
-# TODO
+def test_retire_stock_reissuable():
+    """Test that retiring stock works allows for stock to be re-issuable again
+    by default"""
+    pg = Person("Peter Gregory")
+
+    table = CapTable()
+    table.record(None, CommonStock.auth(5000))
+    table.record(None, CommonStock.issue(holder=pg, 
+                                         amount=1000, cert_no="CS-1"))
+
+    # Retire stock
+    table.record(None, CommonStock.retire('CS-1'))
+    cs1 = table[CommonStock]["CS-1"]
+    assert cs1.cancelled
+
+    # Still authorized
+    metastate = table[CommonStock]
+    assert metastate.authorized == 5000
+    assert metastate.issued == 0
+    assert metastate.outstanding == 0
+    assert metastate.issuable == 5000
+
+def test_retire_stock_deauth():
+    """Test that we can set up a class of stock that deauthorizes retired
+    shares of stock
+    """
+    pg = Person("Peter Gregory")
+
+    table = CapTable()
+    table.record(None, CommonStock.auth(5000))
+    table.record(None, CommonStock.issue(holder=pg, 
+                                         amount=1000, cert_no="CS-1"))
+
+    # Amend common stock to disallow reissue of retired stock
+    class CommonStock2(CommonStock):
+        class MetaState(CommonStock.MetaState):
+            DEAUTH_RETIRED = True
+    table.record(None, CommonStock2.auth())
+
+    # Retire stock
+    table.record(None, CommonStock2.retire('CS-1'))
+    cs1 = table[CommonStock2]["CS-1"]
+    assert cs1.cancelled
+
+    # Deauthorized retired shares
+    metastate = table[CommonStock2]
+    assert metastate.authorized == 4000
+    assert metastate.issued == 0
+    assert metastate.outstanding == 0
+    assert metastate.issuable == 4000
