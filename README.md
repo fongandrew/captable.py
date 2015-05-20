@@ -20,14 +20,14 @@ TODO
 * [x] Authorization of Stock
 * [x] Validation rules
 * [x] Persons
-* [ ] Issuance of Stock
+* [x] Issuance of Stock
 * [ ] Retirement of Stock
-* [ ] Reservation of Stock
 * [ ] Convertible Securities
   * [ ] Prefered Stock
   * [ ] Convertible Debt
 * [ ] Stock Plans
   * [ ] Options
+* [ ] Reservation of Stock
 * [ ] Vesting
 * [ ] External events / timing (e.g. vest based on sales)
 * [ ] Expiration of Securities
