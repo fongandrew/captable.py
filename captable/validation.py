@@ -14,8 +14,8 @@ def check_auth(state):
     for name, metastate in state.get(Security.STATE_KEY, {}).iteritems():
         if hasattr(metastate, "authorized") and hasattr(metastate, "issued"):
             assert metastate.authorized >= metastate.issued, (
-                name + " Warning: " + metastate.issued + 
-                " issued but only " + metastate.authorized + " authorized"
+                name + " Warning: " + str(metastate.issued) + 
+                " issued but only " + str(metastate.authorized) + " authorized"
             )
 
 DEFAULT_VALIDATORS = [check_auth]

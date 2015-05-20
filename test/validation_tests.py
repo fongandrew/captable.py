@@ -33,19 +33,16 @@ def test_custom_validators():
     StubTransaction.check(table.state, txn_1, txn_2)
 
 
-# NB: Can't actually change issued directly yet -- work on issuances first
-# 
-# def test_amount_validator():
-#     "Test the default check_auth validator"
-#     table = captable.CapTable()
-#     COMMON = captable.CommonStock()
-#     table.record(None, captable.AuthTransaction(COMMON, 1000))
+def test_amount_validator():
+    "Test the default check_auth validator"
+    table = captable.CapTable()
+    table.record(None, captable.CommonStock.auth(1000))
 
-#     # Test transaction function that changes the "issued" amount to 2000
-#     # and should trigger the check_auth validator
-#     def test_txn(datetime_, state):
-#         state[COMMON].issued = 2000
-#         return state
+    # Test transaction function that changes the "issued" amount to 2000
+    # and should trigger the check_auth validator
+    class TestStock(captable.CommonStock):
+        class MetaState(captable.CommonStock.MetaState):
+            issued = 2000
 
-#     with pytest.raises(AssertionError):
-#         table.record(None, test_txn)
+    with pytest.raises(AssertionError):
+        table.record(None, TestStock.auth())
