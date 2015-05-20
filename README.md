@@ -28,6 +28,8 @@ TODO
   * [ ] Convertible Debt
 * [ ] Stock Plans
   * [ ] Options
+* [ ] Vesting
+* [ ] External events / timing (e.g. vest based on sales)
 * [ ] Expiration of Securities
 * [ ] Waterfall/Liquidation Analysis
 * [ ] Related Persons / Voting Analysis
