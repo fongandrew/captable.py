@@ -87,25 +87,28 @@ class Security(mixins.Snowflake):
         def issue(self, issuance):
             self.issuances.append(issuance)
 
+    @classmethod
+    def issue(cls, *args, **kwds):
+        """Returns a callable issuing stock to a holder"""
+        def txn(datetime_, state):
+            try:
+                metastate = cls.__table_key__(state)
+            except KeyError:
+                raise RuntimeError("Need to authorize security before issuing")
+
+            security = cls(*args, **kwds)
+            security.issued_on = datetime_
+            metastate.issue(security)
+            return state
+
+        return txn
+
     def __init__(self, holder, cert_no=None):
         self.holder = holder
         self.cert_no = None
 
         # Assign datetime when called via transaction
         self.issued_on = None
-
-    def __call__(self, datetime_, state):
-        """Processing a security transactions just means adding it to the
-        issuances list
-        """
-        try:
-            metastate = self.__table_key__(state)
-        except KeyError:
-            raise RuntimeError("Need to authorize security before issuing")
-
-        self.issued_on = datetime_
-        metastate.issue(self)
-        return state
 
 
 class Stock(Security):

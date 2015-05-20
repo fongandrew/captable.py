@@ -12,7 +12,7 @@ def test_auth_before_issue():
     table = CapTable(validators=[])
     holder = Person("Peter Gregory")
     with pytest.raises(RuntimeError):
-        table.record(None, CommonStock(holder=holder, amount=1000))
+        table.record(None, CommonStock.issue(holder=holder, amount=1000))
 
 def test_excess_auth():
     """Should not be able to issue stock in excess of authorization"""
@@ -21,9 +21,9 @@ def test_excess_auth():
     pg = Person("Peter Gregory")
     gb = Person("Gavin Belson")
     table.record(None, CommonStock.auth(1000))
-    table.record(None, CommonStock(holder=pg, amount=500))
+    table.record(None, CommonStock.issue(holder=pg, amount=500))
     with pytest.raises(AssertionError):
-        table.record(None, CommonStock(holder=gb, amount=501))
+        table.record(None, CommonStock.issue(holder=gb, amount=501))
 
 def test_issuance_outstanding_amounts():
     """Issuing stock should update issued, outstanding, and issuable numbers
@@ -33,9 +33,9 @@ def test_issuance_outstanding_amounts():
 
     table = CapTable()
     table.record(None, CommonStock.auth(5000))
-    table.record(None, CommonStock(holder=pg, amount=1000))
-    table.record(None, CommonStock(holder=gb, amount=2000))
-    
+    table.record(None, CommonStock.issue(holder=pg, amount=1000))
+    table.record(None, CommonStock.issue(holder=gb, amount=2000))
+
     assert table[CommonStock].issued == 3000
     assert table[CommonStock].outstanding == 3000
     assert table[CommonStock].issuable == 2000
