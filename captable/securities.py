@@ -19,6 +19,10 @@ class Security(mixins.Snowflake):
         issued_on (datetime) - When this Security was issued
         cert_no (str) - User-assigned sring identifier for this Security, if
             provided
+        cert_name (str) - The actual name on the security. Defaults to the name
+            property of the holder, but may be set to anything (e.g. for when
+            the certificate is addressed to one party but held by another, or
+            if a Person changes its name)
 
     """
     # This variable is used to determine the key in a CapTable's state dict 
@@ -43,6 +47,11 @@ class Security(mixins.Snowflake):
         if ret != None:
             return ret
         raise KeyError("No state for that security")
+
+    @classmethod
+    def _in(cls, state):
+        "Less ugly alias to __table_key__"
+        return cls.__table_key__(state)
 
     @classmethod
     def auth(cls):
@@ -107,7 +116,7 @@ class Security(mixins.Snowflake):
         """Returns a callable issuing stock to a holder"""
         def txn(datetime_, state):
             try:
-                metastate = cls.__table_key__(state)
+                metastate = cls._in(state)
             except KeyError:
                 raise RuntimeError("Need to authorize security before issuing")
 
@@ -115,12 +124,22 @@ class Security(mixins.Snowflake):
             security.issued_on = datetime_
             metastate.issue(security)
             return state
-
         return txn
 
-    def __init__(self, holder, cert_no=None):
+    @classmethod
+    def assign(cls, cert_no, to):
+        """Assigns a certificate from one holder to another"""
+        def txn(datetime_, state):
+            metastate = cls._in(state)
+            issuance = metastate[cert_no]
+            issuance.holder = to
+            return state
+        return txn
+
+    def __init__(self, holder, cert_no=None, cert_name=None):
         self.holder = holder
         self.cert_no = cert_no
+        self.cert_name = cert_name or holder.name
 
         # Assign datetime when called via transaction
         self.issued_on = None
@@ -148,7 +167,7 @@ class Stock(Security):
         issuance"""
         def txn(datetime_, state):
             state = super(Stock, cls).auth()(datetime_, state)
-            metastate = cls.__table_key__(state)
+            metastate = cls._in(state)
 
             # If both supplied, validate (amount var will alter state in below)
             if type(amount) == int and type(delta) == int:
