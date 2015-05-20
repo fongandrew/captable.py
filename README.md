@@ -21,6 +21,7 @@ TODO
 * [x] Validation rules
 * [x] Persons
 * [x] Issuance of Stock
+* [ ] Transfer of Stock
 * [ ] Retirement of Stock
 * [ ] Convertible Securities
   * [ ] Prefered Stock
