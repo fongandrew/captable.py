@@ -23,6 +23,8 @@ class Security(mixins.Snowflake):
             property of the holder, but may be set to anything (e.g. for when
             the certificate is addressed to one party but held by another, or
             if a Person changes its name)
+        cancelled (bool) - If true, then this security has been cancelled.
+            Defaults to False.
 
     """
     # This variable is used to determine the key in a CapTable's state dict 
@@ -136,10 +138,21 @@ class Security(mixins.Snowflake):
             return state
         return txn
 
+    @classmethod
+    def cancel(cls, cert_no):
+        """Cancels a particular certificate number"""
+        def txn(datetime_, state):
+            metastate = cls._in(state)
+            issuance = metastate[cert_no]
+            issuance.cancelled = True
+            return state
+        return txn
+
     def __init__(self, holder, cert_no=None, cert_name=None):
         self.holder = holder
         self.cert_no = cert_no
         self.cert_name = cert_name or holder.name
+        self.cancelled = False
 
         # Assign datetime when called via transaction
         self.issued_on = None
@@ -201,7 +214,9 @@ class Stock(Security):
         @property
         def issued(self):
             """Number of shares issued, which may or may not be outstanding"""
-            return sum(map((lambda i: i.amount), self.issuances))
+            return sum(map(
+                    (lambda i: 0 if i.cancelled else i.amount), 
+                    self.issuances))
 
         @property
         def reserved(self):

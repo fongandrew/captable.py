@@ -60,12 +60,14 @@ def test_issuance_by_cert_no():
     assert cs1.holder == pg
     assert cs1.amount == 1000
     assert cs1.cert_name == "Peter Gregory"
+    assert not cs1.cancelled 
 
     cs2 = table[CommonStock]["CS-2"]
     assert cs2.cert_no == "CS-2"
     assert cs2.holder == gb
     assert cs2.amount == 2000
     assert cs2.cert_name == "Gavin Belson"
+    assert not cs2.cancelled
 
 def test_non_unique_cert_no():
     """Should not be able to re-use a cert_no while it is still in use
@@ -103,3 +105,38 @@ def test_assign_cert():
     assert cs1.cert_name == "Peter Gregory" # This does not change because
                                             # we need to cancel and re-issue
                                             # a new certificate to change name
+    assert not cs1.cancelled
+
+def test_cancel():
+    """Should be able to cancel an old certificate"""
+    pg = Person("Peter Gregory")
+    gb = Person("Gavin Belson")
+
+    table = CapTable()
+    table.record(None, CommonStock.auth(5000))
+    table.record(None, CommonStock.issue(holder=pg, 
+                                         amount=1000, cert_no="CS-1"))
+    table.record(None, CommonStock.issue(holder=gb, 
+                                         amount=2000, cert_no="CS-2"))
+
+    table.record(None, CommonStock.cancel(cert_no="CS-1"))
+
+    # CS-1 is still accessible but should show up as canceled
+    cs1 = table[CommonStock]["CS-1"]
+    assert cs1.cert_no == "CS-1"
+    assert cs1.holder == pg
+    assert cs1.amount == 1000
+    assert cs1.cert_name == "Peter Gregory"
+    assert cs1.cancelled
+
+    # Issued / outsanding numbers should change
+    metastate = table[CommonStock]
+    assert metastate.issued == 2000
+    assert metastate.outstanding == 2000
+    assert metastate.issuable == 3000
+
+# def test_retire_stock_reissuable():
+#     """Test that retiring stock works allows for stock to be re-issuable again
+#     by default"""
+#
+# TODO
