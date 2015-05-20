@@ -107,6 +107,29 @@ def test_transfer_cert():
                                             # a new certificate to change name
     assert not cs1.cancelled
 
+def test_treasury_stock():
+    """Should be able to reclaim stock as treasury shares"""
+    pg = Person("Peter Gregory")
+
+    table = CapTable()
+    table.record(None, CommonStock.auth(5000))
+    table.record(None, CommonStock.issue(holder=pg, 
+                                         amount=1000, cert_no="CS-1"))
+    table.record(None, CommonStock.transfer(cert_no="CS-1", to=None))
+
+    # Holder updated but certificate is not necessarily cancelled
+    cs1 = table[CommonStock]["CS-1"]
+    assert cs1.holder == None
+    assert not cs1.cancelled
+
+    # Oustanding number should be updated though
+    metastate = table[CommonStock]
+    assert metastate.issued == 1000
+    assert metastate.outstanding == 0
+
+    # By default, treasury stock should be re-issuable
+    assert metastate.issuable == 5000
+
 def test_cancel():
     """Should be able to cancel an old certificate"""
     pg = Person("Peter Gregory")

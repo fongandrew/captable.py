@@ -15,7 +15,9 @@ class Security(mixins.Snowflake):
             Security, defaults to None
 
     Properties:
-        holder (Person) - The legal Person holding this Security
+        holder (Person) - The legal Person holding this Security. If holder
+            is None, then this treated as a Security still held by the Issuer,
+            e.g. treasury stock.
         issued_on (datetime) - When this Security was issued
         cert_no (str) - User-assigned sring identifier for this Security, if
             provided
@@ -143,7 +145,9 @@ class Security(mixins.Snowflake):
 
     @classmethod
     def cancel(cls, cert_no):
-        """Cancels a particular certificate number"""
+        """Returns a transaction cancelling a particular certificate. A
+        cancelled security is simply one no longer recognized by the issuer.
+        """
         def txn(datetime_, state):
             metastate = cls._in(state)
             issuance = metastate[cert_no]
@@ -212,7 +216,10 @@ class Stock(Security):
         @property
         def outstanding(self):
             """Number of shares issued and outstanding"""
-            return self.issued # TODO - update for retired shares
+            return sum(map(
+                    (lambda i: i.amount if i.holder and not i.cancelled 
+                                        else 0), 
+                    self.issuances))
 
         @property
         def issued(self):
