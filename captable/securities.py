@@ -81,11 +81,26 @@ class Security(mixins.Snowflake):
             return ret
 
         def __init__(self):
-            # Used to store issuances
+            # Used to store issuances in order
             self.issuances = []
+
+            # Used to reference issuances by certifiate number (if applicable)
+            self.cert_no_lookups = {}
 
         def issue(self, issuance):
             self.issuances.append(issuance)
+            if issuance.cert_no:
+                if issuance.cert_no in self.cert_no_lookups:
+                    raise ValueError("cert_no %s already in use" % 
+                                     issuance.cert_no)
+                else:
+                    self.cert_no_lookups[issuance.cert_no] = issuance
+
+        def __getitem__(self, key):
+            return self.cert_no_lookups[key]
+
+        def __contains__(self, key):
+            return key in self.cert_no_lookups
 
     @classmethod
     def issue(cls, *args, **kwds):
@@ -105,7 +120,7 @@ class Security(mixins.Snowflake):
 
     def __init__(self, holder, cert_no=None):
         self.holder = holder
-        self.cert_no = None
+        self.cert_no = cert_no
 
         # Assign datetime when called via transaction
         self.issued_on = None
