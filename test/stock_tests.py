@@ -83,8 +83,8 @@ def test_non_unique_cert_no():
         table.record(None, CommonStock.issue(holder=pg, 
                                              amount=2000, cert_no="CS-1"))
 
-def test_assign_cert():
-    """Should be able to assign a particular stock certificate from one
+def test_transfer_cert():
+    """Should be able to transfer a particular stock certificate from one
     holder to another. This is used to note that the actual certificate has 
     been handed off from one party to another, but that the name on the 
     certificate (or in the books) has not necessarily changed.
@@ -96,7 +96,7 @@ def test_assign_cert():
     table.record(None, CommonStock.auth(5000))
     table.record(None, CommonStock.issue(holder=pg, 
                                          amount=1000, cert_no="CS-1"))
-    table.record(None, CommonStock.assign(cert_no="CS-1", to=gb))
+    table.record(None, CommonStock.transfer(cert_no="CS-1", to=gb))
 
     cs1 = table[CommonStock]["CS-1"]
     assert cs1.cert_no == "CS-1"

@@ -129,8 +129,11 @@ class Security(mixins.Snowflake):
         return txn
 
     @classmethod
-    def assign(cls, cert_no, to):
-        """Assigns a certificate from one holder to another"""
+    def transfer(cls, cert_no, to):
+        """Returns a transaction transfering a certificate from one holder to 
+        another. A transfer does not change the name or values on the
+        certificate. It only changes the holder. 
+        """
         def txn(datetime_, state):
             metastate = cls._in(state)
             issuance = metastate[cert_no]
