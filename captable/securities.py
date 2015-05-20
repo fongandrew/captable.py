@@ -99,12 +99,13 @@ class Security(mixins.Snowflake):
         issuances list
         """
         try:
-            state = self.__table_key__(state)
+            metastate = self.__table_key__(state)
         except KeyError:
             raise RuntimeError("Need to authorize security before issuing")
 
         self.issued_on = datetime_
-        state.issue(self)
+        metastate.issue(self)
+        return state
 
 
 class Stock(Security):
@@ -158,7 +159,7 @@ class Stock(Security):
         @property
         def outstanding(self):
             """Number of shares issued and outstanding"""
-            return 0 #TODO
+            return self.issued # TODO - update for retired shares
 
         @property
         def issued(self):
@@ -180,6 +181,12 @@ class Stock(Security):
             """Number of shares avilable for issuance after taking into account
             reserved shares"""
             return self.issuable - self.reserved
+
+        def issue(self, issuance):
+            assert self.issued + issuance.amount < self.authorized, \
+                "Insufficient authorized: %s < %s + %s" % (
+                self.authorized, issuance.amount, self.issued)
+            return super(Stock.MetaState, self).issue(issuance)
 
     def __init__(self, holder, amount, cert_no=None):
         super(Stock, self).__init__(holder=holder, cert_no=cert_no)
