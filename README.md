@@ -23,6 +23,7 @@ TODO
 * [x] Issuance of Stock
 * [ ] Transfer of Stock
 * [ ] Retirement of Stock
+* [ ] Purchase Price for Stock
 * [ ] Convertible Securities
   * [ ] Prefered Stock
   * [ ] Convertible Debt
