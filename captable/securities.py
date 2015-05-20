@@ -236,7 +236,16 @@ class Stock(Security):
         @property
         def issuable(self):
             """Number of shares available for issuance"""
-            return self.authorized - self.outstanding
+            return self.authorized - self.outstanding - self.reissuable
+
+        @property
+        def reissuable(self):
+            """Number of treasury shares available for reissuance to new 
+            parties"""
+            return sum(map(
+                    (lambda i: i.amount if (not i.holder) and (not i.cancelled) 
+                                        else 0), 
+                    self.issuances))
         
         @property
         def unreserved(self):
