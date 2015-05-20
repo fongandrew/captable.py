@@ -20,9 +20,9 @@ class AuthTests(unittest.TestCase):
         """Initialize a blank captable and authorize multiple classes of
         securities"""
         self.table = captable.CapTable()
-        self.table.record_multi(datetime.datetime(2015,5,9),
-                                ClassACommon.auth(1000000),
-                                ClassBCommon.auth(500000))
+        self.table.record(datetime.datetime(2015,5,9),
+                          ClassACommon.auth(1000000),
+                          ClassBCommon.auth(500000))
 
     def check_auth(self, security, total):
         amounts = self.table[security]

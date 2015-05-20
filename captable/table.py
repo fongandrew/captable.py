@@ -83,12 +83,6 @@ class CapTable(object):
         # multiple transactions)
         self.transactions.append((datetime_,) + txns)
 
-    def record_multi(self, datetime_, *txns):
-        """Record multiple transactions as a single transaction"""
-        if len(txns) == 0:
-            raise ValueError("No transactions provided")
-        self.record(datetime_, MultiTransaction(*txns))
-
     def __getitem__(self, key):
         """Shortcut for accessing the table's current state dict. If the key
         is an object with a '__table_key__' method, will pass current state to
@@ -97,18 +91,3 @@ class CapTable(object):
         if hasattr(key, '__table_key__'):
             return key.__table_key__(self.state)
         raise KeyError("%s does not have a '__table_key__' method" % repr(key))
-        
-
-class MultiTransaction(object):
-    "An object that combines multiple transactions into a single transaction"
-    def __init__(self, *txns):
-        self.txns = txns
-
-    def __call__(self, datetime_, state):
-        """Prcess all sub-transactions"""
-        for txn in self.txns:
-            state = txn(datetime_, state)
-            if state == None:
-                raise RuntimeError("Transaction part did not return new "
-                                   "state data")
-        return state
