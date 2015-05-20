@@ -127,10 +127,8 @@ def test_treasury_stock():
     assert metastate.issued == 1000
     assert metastate.outstanding == 0
 
-    # By default, treasury stock should be re-issuable. But distinguish between
-    # shares that can be issued and shares that can be re-issued
-    assert metastate.issuable == 4000
-    assert metastate.reissuable == 1000
+    # Treasury stock should be re-issuable.
+    assert metastate.issuable == 5000
 
 def test_cancel():
     """Should be able to cancel an old certificate"""
